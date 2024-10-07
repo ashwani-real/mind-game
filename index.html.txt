@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Match Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 50px;
+        }
+        h1 {
+            font-size: 36px;
+            color: #333;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .card {
+            background-color: #eee;
+            border: 2px solid #333;
+            border-radius: 10px;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 36px;
+            cursor: pointer;
+            color: white;
+        }
+        .matched {
+            background-color: #4CAF50;
+            cursor: default;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Memory Match Game</h1>
+<p>Click two cards to find a matching pair!</p>
+
+<!-- Game Grid -->
+<div class="grid" id="gameGrid">
+    <!-- Cards will be generated here -->
+</div>
+
+<!-- Restart Button -->
+<button onclick="restartGame()" style="padding: 10px 20px; margin-top: 20px;">Restart Game</button>
+
+<script>
+    const cardValues = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    let cards = [...cardValues, ...cardValues]; // Duplicate values for matching pairs
+    let firstCard, secondCard;
+    let lockBoard = false;
+    let matches = 0;
+
+    // Shuffle the cards
+    function shuffle(array) {
+        array.sort(() => Math.random() - 0.5);
+    }
+
+    // Create the game board
+    function createBoard() {
+        const grid = document.getElementById('gameGrid');
+        grid.innerHTML = ''; // Clear the grid for a new game
+        shuffle(cards);
+        cards.forEach((cardValue, index) => {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.setAttribute('data-value', cardValue);
+            card.setAttribute('id', index);
+            card.addEventListener('click', flipCard);
+            grid.appendChild(card);
+        });
+    }
+
+    // Flip card function
+    function flipCard() {
+        if (lockBoard || this === firstCard) return; // Prevent multiple clicks
+
+        this.innerHTML = this.getAttribute('data-value'); // Show card value
+
+        if (!firstCard) {
+            firstCard = this;
+        } else {
+            secondCard = this;
+            lockBoard = true; // Lock the board while checking
+            checkMatch();
+        }
+    }
+
+    // Check for a match
+    function checkMatch() {
+        const isMatch = firstCard.getAttribute('data-value') === secondCard.getAttribute('data-value');
+        if (isMatch) {
+            disableCards(); // Mark cards as matched
+        } else {
+            setTimeout(unflipCards, 1000); // Hide cards after 1 second if no match
+        }
+    }
+
+    // Disable the matched cards
+    function disableCards() {
+        firstCard.classList.add('matched');
+        secondCard.classList.add('matched');
+        firstCard.removeEventListener('click', flipCard);
+        secondCard.removeEventListener('click', flipCard);
+        resetBoard();
+        matches += 1;
+        if (matches === cardValues.length) {
+            setTimeout(() => alert('Congratulations! You found all the pairs!'), 500);
+        }
+    }
+
+    // Unflip the cards if no match
+    function unflipCards() {
+        firstCard.innerHTML = '';
+        secondCard.innerHTML = '';
+        resetBoard();
+    }
+
+    // Reset the board for the next round
+    function resetBoard() {
+        [firstCard, secondCard] = [null, null];
+        lockBoard = false;
+    }
+
+    // Restart the game
+    function restartGame() {
+        matches = 0;
+        firstCard = secondCard = null;
+        createBoard();
+    }
+
+    // Start the game
+    createBoard();
+</script>
+
+</body>
+</html>
